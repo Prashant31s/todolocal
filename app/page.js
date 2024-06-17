@@ -1,95 +1,59 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import { useEffect, useState } from "react";
+import { TodoProvider } from "./contexts/TodoContext";
+import { TodoForm, TodoItem } from "./contexts/Index";
 
 export default function Home() {
+  const [todos, setTodos]= useState([])
+  const addTodo =(todo)=>{
+    setTodos((prev)=>[{id:Date.now(),...todo},...prev])
+  }
+  const updateTodo =(id, todo)=>{
+    setTodos((prev)=>prev.map((prevTodo)=>(prevTodo.id=== id ? todo : prevTodo)))
+  }
+  const deleteTodo =(id)=>{
+    setTodos((prev)=>prev.filter((todo)=>todo.id!==id))
+  }
+
+  const toggleComplete =(id)=>{
+    setTodos((prev)=>prev.map((prevTodo)=>prevTodo.id===id? {...prevTodo, completed: !prevTodo.completed}: prevTodo))
+  }
+  
+  useEffect(()=>{
+    const todos=JSON.parse(localStorage.getItem("todos"))
+    if(todos && todos.length){
+      setTodos(todos)
+    }
+  },[])
+//we can have multiple useeffect in an application
+  useEffect(()=>{
+    localStorage.setItem("todos",JSON.stringify(todos))
+  },[todos])
+  
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <TodoProvider value ={{todos, addTodo, updateTodo, deleteTodo, toggleComplete}}>
+        <div className="bg-[#172842] min-h-screen py-8">
+            <div className="w-full max-w-2xl mx-auto shadow-md rounded-lg px-4 py-3 text-white">
+                <h1 className="text-2xl font-bold text-center mb-8 mt-2">Manage Your Todos</h1>
+                <div className="mb-4">
+                    {/* Todo form goes here */} 
+                    <TodoForm/>
+                </div>
+                <div className="flex flex-wrap gap-y-3">
+                    {/*Loop and Add TodoItem here */}
+                    {todos.map((todo)=>(
+                      <div key ={todo.id}
+                      className="w-full"
+                      >
+                        <TodoItem todo={todo}/>
+                      </div>
+                    ))}
+                </div>
+            </div>
         </div>
-      </div>
+    </TodoProvider>
+   
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+  )
 }
